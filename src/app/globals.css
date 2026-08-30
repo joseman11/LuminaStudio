@@ -1,19 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #FDFCF8;
-  --ink: #1A1A17;
-  --ink-soft: #2B2B27;
-  --stone: #8C857B;
-  --stone-light: #B8B2A7;
-  --line: #E8E0D5;
-  --line-strong: #D4CFC7;
-  --sand: #F3EFE8;
-  --sand-deep: #EDE7DD;
-  --accent: #B08D6B;
-  --accent-hover: #9A7A5B;
-  --accent-soft: #F1E8DC;
-  --success: #6B7F6B;
+  --paper: #FFFBF5;
+  --paper-2: #FFF1E6;
+  --ink: #23140F;
+  --ink-soft: #3A2A20;
+  --stone: #9B8E82;
+  --stone-light: #C2B8A9;
+  --line: #E8D9C6;
+  --line-strong: #DDC9B0;
+  --sand: #F3E2CC;
+  --sand-deep: #E8CDB0;
+  --blush: #FADDD6;
+  --blush-deep: #F2C4B8;
+  --terracotta: #DC6B4A;
+  --terracotta-hover: #C85A3A;
+  --clay: #A85A3A;
+  --brown: #2B1A12;
+  --accent: #DC6B4A;
+  --accent-hover: #C85A3A;
+  --accent-soft: #FDE8E0;
+  --success: #6B8A6B;
+  --mustard: #E8C04A;
 }
 
 @theme inline {
@@ -23,8 +31,12 @@
   --color-line: var(--line);
   --color-sand: var(--sand);
   --color-accent: var(--accent);
-  --font-serif: var(--font-cormorant);
+  --color-blush: var(--blush);
+  --color-terracotta: var(--terracotta);
+  --color-brown: var(--brown);
+  --font-display: var(--font-fraunces);
   --font-sans: var(--font-dm-sans);
+  --font-bricolage: var(--font-bricolage);
 }
 
 * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
@@ -42,27 +54,44 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-::selection { background: var(--accent-soft); }
+::selection { background: var(--blush); }
 
-/* Hide scrollbar for booking stepper on mobile but keep scroll */
+/* Hide scrollbar */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Focus ring */
+/* Focus ring - warm */
 :focus-visible {
-  outline: 1px solid var(--ink);
+  outline: 2px solid var(--terracotta);
   outline-offset: 2px;
 }
 
-/* Serif display */
+/* Display fonts */
 .font-display {
-  font-family: var(--font-cormorant), Georgia, serif;
-  font-weight: 300;
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+}
+.font-display-soft {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 600;
   letter-spacing: -0.02em;
-  line-height: 0.95;
+}
+.font-bricolage {
+  font-family: var(--font-bricolage), system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 .font-display-italic {
-  font-family: var(--font-cormorant), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-style: italic;
-  font-weight: 300;
+  font-weight: 700;
+}
+
+/* Hand-drawn underline */
+.underline-wavy {
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: var(--terracotta);
+  text-underline-offset: 4px;
 }

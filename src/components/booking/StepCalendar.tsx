@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { BookingDraft } from "@/types";
 import { getDayAvailability } from "@/lib/availability";
 
@@ -8,16 +8,16 @@ function addMonths(d: Date, n: number) { return new Date(d.getFullYear(), d.getM
 function daysInMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth()+1, 0).getDate(); }
 
 export default function StepCalendar({ draft, setDraft }: { draft: BookingDraft; setDraft: (d: BookingDraft)=>void }) {
-  const [view, setView] = useState(() => {
-    const now = new Date();
-    return startOfMonth(now);
-  });
-
-  const today = useMemo(()=>{ const t=new Date(); t.setHours(0,0,0,0); return t;},[]);
-
+  const [view, setView] = useState<Date | null>(null);
+  const [today, setToday] = useState<Date | null>(null);
+  useEffect(() => {
+    setView(startOfMonth(new Date()));
+    const t = new Date(); t.setHours(0,0,0,0); setToday(t);
+  }, []);
   const cells = useMemo(()=>{
+    if (!view) return [];
     const first = startOfMonth(view);
-    const startDay = (first.getDay()+6)%7; // Mon=0
+    const startDay = (first.getDay()+6)%7;
     const total = daysInMonth(view);
     const arr: (Date|null)[] = [];
     for(let i=0;i<startDay;i++) arr.push(null);
@@ -28,75 +28,78 @@ export default function StepCalendar({ draft, setDraft }: { draft: BookingDraft;
 
   function isSelected(d: Date){
     if(!draft.date) return false;
-    const iso = d.toISOString().slice(0,10);
-    return iso===draft.date;
+    return d.toISOString().slice(0,10)===draft.date;
+  }
+
+  if (!view || !today) {
+    return (
+      <div className="grid lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7 h-[320px] bg-white border border-[var(--line)] animate-pulse" />
+        <div className="lg:col-span-5 h-[200px] bg-[var(--blush)] border border-[var(--line)] animate-pulse" />
+      </div>
+    );
   }
 
   return (
-    <div className="grid lg:grid-cols-12 gap-8">
+    <div className="grid lg:grid-cols-12 gap-6" suppressHydrationWarning>
       <div className="lg:col-span-7">
         <div className="flex items-center justify-between">
-          <div className="font-display text-[22px] capitalize">
-            {view.toLocaleDateString("es-ES", { month:"long", year:"numeric" })}
-          </div>
+          <div className="font-display text-[22px] capitalize" suppressHydrationWarning>{view.toLocaleDateString("es-MX", { month:"long", year:"numeric" })}</div>
           <div className="flex gap-2">
-            <button onClick={()=>setView(addMonths(view,-1))} className="w-9 h-9 border border-[var(--line)] grid place-items-center hover:bg-[var(--sand)]">‹</button>
-            <button onClick={()=>setView(addMonths(view,1))} className="w-9 h-9 border border-[var(--line)] grid place-items-center hover:bg-[var(--sand)]">›</button>
+            <button onClick={()=>setView(addMonths(view,-1))} className="w-9 h-9 border border-[var(--line)] bg-white hover:bg-[var(--sand)] grid place-items-center">‹</button>
+            <button onClick={()=>setView(addMonths(view,1))} className="w-9 h-9 border border-[var(--line)] bg-[var(--brown)] text-white grid place-items-center">›</button>
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-7 gap-px bg-[var(--line)] border border-[var(--line)]">
-          {["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].map(d=>(
-            <div key={d} className="bg-[var(--sand)] text-center py-2 text-[11px] tracking-[0.12em] uppercase text-[var(--stone)]">{d}</div>
-          ))}
-          {cells.map((d,i)=>{
-            if(!d) return <div key={i} className="bg-white h-[48px] lg:h-[56px]" />;
-            const isPast = d < today;
-            const { available } = getDayAvailability(d);
-            const disabled = isPast || !available;
-            const sel = isSelected(d);
-            return (
-              <button
-                key={i}
-                disabled={disabled}
-                onClick={()=> setDraft({ ...draft, date: d.toISOString().slice(0,10), time: null })}
-                className={`h-[48px] lg:h-[56px] bg-white grid place-items-center relative text-sm hover:bg-[var(--sand)] disabled:opacity-30 disabled:cursor-not-allowed
-                  ${sel ? "!bg-[var(--ink)] !text-white" : ""}
-                  ${!disabled && !sel ? "hover:border hover:border-[var(--ink)]" : ""}
-                `}
-              >
-                <span className={sel ? "font-[500]" : ""}>{d.getDate()}</span>
-                {!disabled && !sel && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-[var(--success)]" />}
-              </button>
-            );
-          })}
+        <div className="mt-4 border border-[var(--line)] overflow-hidden">
+          <div className="grid grid-cols-7 gap-px bg-[var(--line)]">
+            {["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].map(d=>(
+              <div key={d} className="bg-[var(--sand)] text-center py-2 text-[11px] font-[700] tracking-[0.08em] uppercase text-[var(--ink-soft)]">{d}</div>
+            ))}
+            {cells.map((d,i)=>{
+              if(!d) return <div key={i} className="bg-white h-[48px] lg:h-[54px]" />;
+              const isPast = d < today;
+              const { available } = getDayAvailability(d);
+              const disabled = isPast || !available;
+              const sel = isSelected(d);
+              return (
+                <button
+                  key={i}
+                  disabled={disabled}
+                  onClick={()=> setDraft({ ...draft, date: d.toISOString().slice(0,10), time: null })}
+                  className={`h-[48px] lg:h-[54px] grid place-items-center relative text-[14px] font-[500] border border-transparent
+                    ${sel ? "bg-[var(--terracotta)] text-white border-[var(--terracotta)]" : "bg-white hover:bg-[var(--blush)]"}
+                    disabled:opacity-30 disabled:cursor-not-allowed`}
+                >
+                  {d.getDate()}
+                  {!disabled && !sel && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-[var(--terracotta)]" />}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="mt-3 flex gap-4 text-[12px] text-[var(--stone)]">
-          <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[var(--success)]"/> Disponible</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-px bg-[var(--line-strong)]"/> No disponible</span>
+        <div className="mt-3 flex gap-4 text-[12px]">
+          <span className="flex items-center gap-1.5 text-[var(--ink-soft)]"><span className="w-2 h-2 rounded-full bg-[var(--terracotta)]"/> Disponible</span>
+          <span className="flex items-center gap-1.5 text-[var(--stone)]"><span className="w-3 h-px bg-[var(--line)]"/> Cerrado</span>
         </div>
       </div>
 
       <div className="lg:col-span-5">
-        <div className="border border-[var(--line)] bg-[var(--sand)] p-6">
-          <div className="text-[11px] tracking-[0.14em] uppercase text-[var(--stone)]">Tu selección</div>
+        <div className="bg-[var(--blush)] border border-[var(--line)] p-6">
+          <div className="text-[11px] tracking-[0.1em] uppercase font-[700] text-[var(--terracotta)]">Tu día</div>
           {draft.date ? (
             <>
-              <div className="font-display text-[22px] mt-2 capitalize">
-                {new Date(draft.date+"T12:00:00").toLocaleDateString("es-ES", { weekday:"long", day:"numeric", month:"long" })}
+              <div className="font-display text-[22px] mt-2 capitalize leading-none">
+                {new Date(draft.date+"T12:00:00").toLocaleDateString("es-MX", { weekday:"long", day:"numeric", month:"long" })}
               </div>
-              <div className="mt-2 text-[13px] leading-5 text-[var(--stone)]">
-                Horario de ese día se mostrará en el siguiente paso según el profesional y la duración.
-              </div>
-              <div className="mt-4 inline-flex items-center gap-2 text-[12px] tracking-[0.08em] uppercase border border-[var(--line-strong)] px-3 py-1.5 bg-white">
-                <span className="w-2 h-2 rounded-full bg-[var(--success)]"/> Hay huecos
-              </div>
+              <p className="mt-2 text-[13px] leading-5 text-[var(--ink-soft)]">Perfecto — en el siguiente paso te mostramos los huecos reales para ese día.</p>
+              <div className="mt-4 inline-flex items-center gap-2 bg-[var(--terracotta)] text-white px-3 py-1.5 text-[12px] font-[700]">Hay huecos ✦</div>
             </>
           ) : (
-            <div className="mt-3 text-[14px] leading-6 text-[var(--stone)]">Elige un día en el calendario. Los lunes y domingos cerramos.</div>
+            <p className="mt-3 text-[14px] leading-6 text-[var(--ink-soft)]">Toca un día. Cerramos domingos y lunes para descansar.</p>
           )}
-          <div className="mt-6 pt-4 border-t border-[var(--line)] text-[12px] leading-5 text-[var(--stone)]">
-            Si necesitas un hueco muy concreto, déjanos una nota en el paso de detalles y haremos lo posible.
+          <div className="mt-6 pt-4 border-t border-[var(--brown)]/10 text-[12px] leading-5 text-[var(--ink-soft)]">
+            ¿Necesitas un hueco muy puntual? Déjanos una notita más adelante.
           </div>
         </div>
       </div>

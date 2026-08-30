@@ -37,6 +37,7 @@ export interface BookingDraft {
   firstVisit: boolean | null;
   note: string;
   referenceImage: string | null; // data URL
+  privacyAccepted?: boolean;
 }
 
 export interface Appointment extends BookingDraft {

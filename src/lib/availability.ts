@@ -29,9 +29,13 @@ export function getSlotsForDate(dateStr: string, specialistId: string | null, du
 
 export function formatDateLong(iso: string): string {
   const d = new Date(iso + "T12:00:00");
-  return d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
 export function formatDateShort(iso: string): string {
   const d = new Date(iso + "T12:00:00");
-  return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+  return d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+}
+
+export function formatPrice(mxn: number): string {
+  return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(mxn);
 }

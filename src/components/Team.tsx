@@ -2,60 +2,75 @@
 import { useState } from "react";
 import { specialists } from "@/data/specialists";
 
+const humanNote: Record<string, string> = {
+  "sofia-reyes": "No cree que todos necesitemos el mismo corte. Corta pensando en cómo te peinas tú en casa.",
+  "marco-duran": "Formula cada color como si fuera para él. Obsesionado con que no se vea “teñido”.",
+  "ines-calvo": "Prueba dos caminos, fotografía, y deciden juntas. Nada acartonado.",
+  "yuki-tanaka": "Manos lentas, productos silenciosos. Su facial es el más pedido los viernes.",
+  "carla-mora": "Trabaja en seco, sin torno agresivo. Sus uñas duran semanas de verdad.",
+};
+
 export default function Team({ onReserve }: { onReserve:(id:string)=>void }){
   const [active, setActive] = useState(specialists[0].id);
   const person = specialists.find(s=>s.id===active)!;
 
   return (
-    <section id="equipo" className="mx-auto max-w-[1280px] px-6 lg:px-8 py-12 lg:py-16">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 className="font-display text-[36px] lg:text-[44px] leading-none">Nuestro equipo</h2>
-        <span className="hidden sm:block text-[11px] tracking-[0.14em] uppercase text-[var(--stone)]">5 especialistas · agenda propia</span>
-      </div>
-
-      {/* Editorial: large feature + list */}
-      <div className="mt-8 grid lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7">
-          <div className="relative aspect-[4/3] lg:aspect-[5/4] overflow-hidden bg-[var(--sand)] border border-[var(--line)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-            <div className="absolute bottom-0 left-0 bg-white border-t border-r border-[var(--line)] p-5 max-w-[85%]">
-              <div className="font-display text-[22px] leading-none">{person.name}</div>
-              <div className="text-[11px] tracking-[0.08em] uppercase text-[var(--stone)] mt-1">{person.role}</div>
-            </div>
+    <section suppressHydrationWarning id="equipo" className="bg-[var(--sand)] border-y border-[var(--line)]">
+      <div className="mx-auto max-w-[1280px] px-6 lg:px-8 py-10 lg:py-14">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div>
+            <div className="text-[11px] tracking-[0.12em] uppercase font-[700] text-[var(--terracotta)]">Conócenos</div>
+            <h2 className="font-display text-[36px] lg:text-[44px] leading-[0.9] mt-2">Gente real,<br/>manos expertas.</h2>
           </div>
-          <div className="mt-4 border border-[var(--line)] bg-[var(--sand)] p-6">
-            <div className="text-[11px] tracking-[0.12em] uppercase text-[var(--stone)]">{person.experience}</div>
-            <p className="mt-2 text-[14px] leading-6 text-[var(--ink-soft)]">{person.longBio}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {person.specialties.map(s=> <span key={s} className="text-[11px] tracking-[0.08em] uppercase border border-[var(--line)] bg-white px-2.5 py-1">{s}</span>)}
-            </div>
-            <button onClick={()=>onReserve(person.id)} className="mt-6 h-10 px-6 bg-[var(--ink)] text-white text-[11px] tracking-[0.12em] uppercase">Reservar con {person.name.split(" ")[0]}</button>
-          </div>
+          <p className="text-[13px] leading-5 text-[var(--stone)] max-w-[36ch]">5 personas, 5 estilos. Elige con quien te sientas más cómoda o déjanos recomendarte.</p>
         </div>
 
-        <div className="lg:col-span-5">
-          <div className="border border-[var(--line)] bg-white divide-y divide-[var(--line)]">
-            {specialists.map(s=>{
-              const isActive = s.id===active;
-              return (
-                <button key={s.id} onClick={()=>setActive(s.id)} className={`w-full text-left flex gap-4 p-4 items-center hover:bg-[var(--sand)]/50 transition ${isActive ? "bg-[var(--sand)]" : ""}`}>
-                  <div className="w-14 h-14 rounded-full overflow-hidden border border-[var(--line)] shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
+        <div className="mt-8 grid lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7">
+            <div className="bg-white border border-[var(--line)] overflow-hidden">
+              <div className="grid sm:grid-cols-12">
+                <div className="sm:col-span-5 aspect-[4/5] sm:aspect-[3/4] overflow-hidden bg-[var(--blush)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
+                </div>
+                <div className="sm:col-span-7 p-6 flex flex-col">
+                  <div className="text-[11px] tracking-[0.1em] uppercase font-[700] text-[var(--terracotta)]">{person.role}</div>
+                  <div className="font-display text-[26px] leading-none mt-1">{person.name}</div>
+                  <div className="mt-3 text-[13px] leading-5 italic bg-[var(--sand)] border border-[var(--line)] p-3">“{humanNote[person.id]}”</div>
+                  <p className="mt-3 text-[13px] leading-6 text-[var(--ink-soft)]">{person.longBio}</p>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {person.specialties.map(s=> <span key={s} className="px-2.5 py-1 bg-[var(--paper)] border border-[var(--line)] text-[11px] font-[600]">{s}</span>)}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[14px] font-[500] leading-none">{s.name}</div>
-                    <div className="text-[11px] tracking-[0.06em] uppercase text-[var(--stone)] truncate">{s.role}</div>
-                    <div className="text-[12px] text-[var(--stone)] line-clamp-1 mt-1 hidden sm:block">{s.bio}</div>
-                  </div>
-                  <span className={`hidden sm:grid w-7 h-7 place-items-center border text-xs ${isActive ? "bg-[var(--ink)] text-white border-[var(--ink)]" : "border-[var(--line)]"}`}>→</span>
-                </button>
-              );
-            })}
+                  <button onClick={()=>onReserve(person.id)} className="mt-6 h-10 px-5 bg-[var(--terracotta)] text-white text-[12px] font-[700] hover:bg-[var(--terracotta-hover)] self-start">
+                    Reservar con {person.name.split(" ")[0]} →
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="mt-4 p-4 border border-dashed border-[var(--line-strong)] text-[12px] leading-5 text-[var(--stone)] bg-[var(--paper)]">
-            ¿Prefieres no elegir? En la reserva puedes marcar “Sin preferencia” y te mostramos la primera disponibilidad.
+
+          <div className="lg:col-span-5">
+            <div className="grid grid-cols-1 gap-2">
+              {specialists.map(s=>{
+                const isActive = s.id===active;
+                return (
+                  <button key={s.id} onClick={()=>setActive(s.id)} className={`text-left flex gap-3 p-3 border items-center transition ${isActive ? "bg-[var(--brown)] text-white border-[var(--brown)]" : "bg-white border-[var(--line)] hover:bg-[var(--paper)]"}`}>
+                    <div className="w-12 h-12 overflow-hidden border border-[var(--line)] shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[14px] font-[700] leading-none">{s.name}</div>
+                      <div className={`text-[11px] truncate ${isActive ? "text-white/70" : "text-[var(--stone)]"}`}>{s.role}</div>
+                    </div>
+                    <span className={`w-7 h-7 grid place-items-center border text-xs shrink-0 ${isActive ? "bg-white text-[var(--brown)] border-white" : "bg-[var(--sand)] border-[var(--line)]"}`}>→</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-3 bg-[var(--blush)] border border-[var(--line)] p-4 text-[12px] leading-5 text-[var(--ink-soft)]">
+              ¿Dudas? En la reserva puedes elegir <span className="font-[700]">Sin preferencia</span> y te mostramos el primer hueco disponible.
+            </div>
           </div>
         </div>
       </div>

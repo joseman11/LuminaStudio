@@ -1,4 +1,4 @@
-const CACHE = "lumina-v1";
+const CACHE = "lumina-v2";
 const ASSETS = ["/", "/manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
@@ -11,16 +11,26 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+self.addEventListener("message", (e) => {
+  if (e.data === "skipWaiting") self.skipWaiting();
+});
+
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
-  // Network first for documents, cache first for assets
+  const url = req.url;
+  // Ignorar todo lo que no sea http/https y HMR / extensiones
+  if (!url.startsWith("http://") && !url.startsWith("https://")) return;
+  if (url.includes("/_next/webpack-hmr") || url.includes("/_next/hmr") || url.includes("chrome-extension") || url.includes("extension://")) return;
+
   if (req.headers.get("accept")?.includes("text/html")) {
     e.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
+          if (res.ok && res.type === "basic") {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy).catch(() => {})).catch(() => {});
+          }
           return res;
         })
         .catch(() => caches.match(req).then((r) => r || caches.match("/")))
@@ -32,9 +42,9 @@ self.addEventListener("fetch", (e) => {
       if (cached) return cached;
       return fetch(req)
         .then((res) => {
-          if (res.ok) {
+          if (res.ok && res.type === "basic" && url.startsWith(self.location.origin)) {
             const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy));
+            caches.open(CACHE).then((c) => c.put(req, copy).catch(() => {})).catch(() => {});
           }
           return res;
         })

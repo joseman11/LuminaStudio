@@ -11,10 +11,8 @@ import { useEffect } from "react";
 
 export default function Home() {
   useEffect(() => {
-    // handle external reserve requests (from Finder, Services, Team)
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as { serviceIds?: string[]; specialistId?: string };
-      // store pending in localStorage draft and scroll to booking
       try {
         const raw = localStorage.getItem("lumina_draft_v2");
         const draft = raw ? JSON.parse(raw) : { serviceIds: [], specialistId: null, date: null, time: null, firstVisit: null, note: "", referenceImage: null };
@@ -24,9 +22,7 @@ export default function Home() {
       } catch {}
       const el = document.getElementById("reservar");
       if (el) el.scrollIntoView({ behavior: "smooth" });
-      // reload to reflect draft (BookingFlow reads on mount; dispatch event to reload)
       setTimeout(() => window.dispatchEvent(new Event("lumina:external-reserve")), 300);
-      // also reload page draft via storage event
       window.dispatchEvent(new Event("storage"));
     };
     window.addEventListener("lumina:reserve" as any, handler);
@@ -35,49 +31,28 @@ export default function Home() {
 
   function triggerReserve(serviceIds: string[], specialistId?: string) {
     window.dispatchEvent(new CustomEvent("lumina:reserve", { detail: { serviceIds, specialistId } }));
-    // fallback: if listener not yet, scroll
-    setTimeout(() => {
-      window.location.hash = "#reservar";
-    }, 100);
+    setTimeout(() => { window.location.hash = "#reservar"; }, 100);
   }
 
   return (
     <div>
       <Hero />
-
-      {/* BookingFlow listens to external reserve via draft reload - we need to enhance BookingFlow to listen */}
       <BookingFlowWrapper />
-
       <Finder onReserve={(ids) => triggerReserve(ids)} />
       <ServicesExplorer onReserve={(ids) => triggerReserve(ids)} />
       <Team onReserve={(id) => triggerReserve([], id)} />
       <Lookbook />
       <Space />
       <Appointments />
-
-      {/* subtle newsletter / contact strip */}
       <section className="border-t border-[var(--line)] bg-white">
         <div className="mx-auto max-w-[1280px] px-6 lg:px-8 py-10 grid lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-6">
             <div className="font-display text-[26px] leading-none">¿Dudas antes de reservar?</div>
-            <p className="mt-2 text-[13px] leading-6 text-[var(--stone)]">
-              Escríbenos por WhatsApp y te orientamos sin compromiso. Respuesta en el día.
-            </p>
+            <p className="mt-2 text-[13px] leading-6 text-[var(--stone)]">Escríbenos por WhatsApp y te orientamos sin compromiso. Respuesta en el día.</p>
           </div>
           <div className="lg:col-span-6 flex flex-col sm:flex-row gap-3 lg:justify-end">
-            <a
-              href="https://wa.me/34910000000"
-              target="_blank"
-              className="h-11 px-6 border border-[var(--ink)] inline-flex items-center justify-center text-[12px] tracking-[0.12em] uppercase hover:bg-[var(--ink)] hover:text-white transition"
-            >
-              WhatsApp — 91 000 00 00
-            </a>
-            <a
-              href="mailto:hola@luminastudio.es"
-              className="h-11 px-6 bg-[var(--sand)] border border-[var(--line)] inline-flex items-center justify-center text-[12px] tracking-[0.1em] uppercase"
-            >
-              hola@luminastudio.es
-            </a>
+            <a href="https://wa.me/527773105678" target="_blank" className="h-11 px-6 border border-[var(--ink)] inline-flex items-center justify-center text-[12px] tracking-[0.12em] uppercase hover:bg-[var(--ink)] hover:text-white transition">WhatsApp — 777 310 5678</a>
+            <a href="mailto:hola@luminacuernavaca.mx" className="h-11 px-6 bg-[var(--sand)] border border-[var(--line)] inline-flex items-center justify-center text-[12px] tracking-[0.1em] uppercase">hola@luminacuernavaca.mx</a>
           </div>
         </div>
       </section>
@@ -85,7 +60,6 @@ export default function Home() {
   );
 }
 
-// Wrapper to re-mount BookingFlow when external reserve happens, so it reloads draft
 import { useState } from "react";
 function BookingFlowWrapper() {
   const [key, setKey] = useState(0);

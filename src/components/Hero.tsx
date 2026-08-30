@@ -2,122 +2,139 @@
 
 export default function Hero() {
   return (
-    <section className="mx-auto max-w-[1280px] px-6 lg:px-8 pt-8 lg:pt-12 pb-10">
-      <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-start">
-        {/* Left editorial */}
-        <div className="lg:col-span-5 flex flex-col justify-between lg:min-h-[640px] py-2">
-          <div>
-            <div className="inline-flex items-center gap-2 text-[11px] tracking-[0.18em] uppercase text-[var(--stone)]">
-              <span className="w-6 h-px bg-[var(--line-strong)]" /> Chamberí · desde 2018
-            </div>
-            <h1 className="font-display mt-6 text-[46px] sm:text-[56px] lg:text-[68px] leading-[0.9]">
-              Tu tiempo
-              <br />
-              <span className="font-display-italic">también</span>
-              <br />
-              merece
-              <br />
-              atención.
-            </h1>
-            <p className="mt-6 max-w-[36ch] text-[15px] leading-7 text-[var(--stone)]">
-              No es solo un corte o un color. Es una hora para ti, sin interrupciones, con alguien que te mira y te escucha. Reserva con calma.
-            </p>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-4">
-            <a
-              href="#reservar"
-              className="inline-flex items-center justify-between bg-[var(--ink)] text-white px-6 h-[52px] max-w-[340px] group"
-            >
-              <span className="text-[13px] tracking-[0.14em] uppercase font-[500]">Reservar una cita</span>
-              <span className="text-lg leading-none group-hover:translate-x-1 transition-transform">→</span>
-            </a>
-            <div className="flex items-center gap-6 text-[13px] text-[var(--stone)]">
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)]" /> Citas hoy disponibles
+    <section suppressHydrationWarning className="relative overflow-hidden bg-[var(--sand)]">
+      {/* soft paper block behind */}
+      <div className="mx-auto max-w-[1280px] px-6 lg:px-8 pt-8 lg:pt-12 pb-10 lg:pb-0">
+        <div className="grid lg:grid-cols-12 gap-6 lg:gap-0 items-start">
+          {/* Text - asymmetric, editorial */}
+          <div className="lg:col-span-6 lg:pr-6 flex flex-col justify-center lg:min-h-[640px] py-2 relative z-10">
+            <div className="inline-flex items-center gap-3">
+              <span className="px-3 py-1 bg-white border border-[var(--line)] text-[11px] tracking-[0.12em] uppercase font-[600] text-[var(--ink-soft)]">
+                Reforma · Cuernavaca · desde 2018
               </span>
-              <a href="#finder" className="underline decoration-[var(--line-strong)] underline-offset-4 hover:text-[var(--ink)]">
-                No sé qué reservar
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-[500] text-[var(--ink-soft)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--terracotta)]" /> Abierto hoy 10–19h
+              </span>
+            </div>
+
+            <h1 className="mt-6 font-display text-[54px] sm:text-[62px] lg:text-[74px] leading-[0.85] tracking-[-0.04em]">
+              <span className="block">Date</span>
+              <span className="block font-display-italic font-[700] text-[var(--terracotta)]">un rato</span>
+              <span className="block">para ti.</span>
+            </h1>
+
+            <p className="mt-5 max-w-[40ch] text-[15px] leading-7 text-[var(--ink-soft)]">
+              Sin llamadas. Sin complicaciones. Elige lo que necesitas, nosotros nos encargamos del resto. Tu próximo cambio empieza aquí.
+            </p>
+
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <a
+                href="#reservar"
+                className="inline-flex items-center justify-center gap-2 bg-[var(--brown)] text-white px-7 h-[52px] text-[14px] font-[600] hover:bg-[var(--ink)] transition-colors"
+              >
+                Reservar una cita <span aria-hidden>→</span>
+              </a>
+              <a
+                href="#finder"
+                className="inline-flex items-center justify-center bg-white border border-[var(--line)] px-6 h-[52px] text-[13px] font-[600] hover:bg-[var(--paper)] transition-colors"
+              >
+                No sé qué elegir
               </a>
             </div>
+
+            <div className="mt-6 flex items-center gap-6 text-[13px] text-[var(--stone)]">
+              <span className="hidden sm:flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[var(--success)]" /> Citas hoy disponibles
+              </span>
+              <span className="flex items-center gap-1.5">
+                ★ 4.9 <span className="text-[var(--stone)]">· 342 reseñas</span>
+              </span>
+            </div>
+
+            {/* little handmade note - desktop */}
+            <div className="hidden lg:block mt-10 rotate-[-0.5deg] bg-white border border-[var(--line)] p-4 max-w-[300px]">
+              <div className="text-[13px] leading-5 italic text-[var(--ink-soft)]">
+                “Salí con el mismo corte, pero mejor. Se nota cuando alguien corta pensando en cómo te peinas en casa.”
+              </div>
+              <div className="mt-2 text-[11px] font-[600] tracking-[0.08em] uppercase text-[var(--stone)]">— Elena · Jiutepec, clienta desde 2021</div>
+            </div>
           </div>
 
-          <div className="hidden lg:flex gap-10 mt-10 pt-8 border-t border-[var(--line)]">
-            <div>
-              <div className="font-display text-3xl">4.9</div>
-              <div className="text-[11px] tracking-[0.12em] uppercase text-[var(--stone)]">200+ reseñas</div>
+          {/* Visual - big photo with solid blocks */}
+          <div className="lg:col-span-6 relative lg:min-h-[640px] flex flex-col justify-end">
+            {/* blush block behind */}
+            <div className="absolute inset-0 lg:left-6 top-6 lg:top-10 bottom-0 bg-[var(--blush)] hidden lg:block" aria-hidden />
+            <div className="absolute -right-6 -top-6 w-24 h-24 bg-[var(--mustard)] hidden lg:grid place-items-center rotate-3" aria-hidden>
+              <span className="font-display text-[11px] leading-[1] text-center text-[var(--brown)]">
+                ETERNA
+                <br />
+                PRIMAVERA
+              </span>
             </div>
-            <div>
-              <div className="font-display text-3xl">12 min</div>
-              <div className="text-[11px] tracking-[0.12em] uppercase text-[var(--stone)]">Respuesta media</div>
-            </div>
-            <div>
-              <div className="font-display text-3xl">5</div>
-              <div className="text-[11px] tracking-[0.12em] uppercase text-[var(--stone)]">Especialistas</div>
+
+            <div className="relative grid grid-cols-12 gap-3 lg:gap-4 lg:pl-10 items-end">
+              <div className="col-span-8">
+                <div className="relative aspect-[4/5.2] overflow-hidden bg-white border border-[var(--line)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://images.unsplash.com/photo-1560869713-7d0a29430803?w=900&h=1100&fit=crop"
+                    alt="Corte bob pulido - clienta Lúmina"
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                  />
+                  <div className="absolute top-3 left-3 bg-[var(--brown)] text-white px-3 py-1 text-[11px] tracking-[0.08em] uppercase font-[600]">Nuevo en Cuernavaca</div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-sm border-t border-[var(--line)] flex justify-between items-end">
+                    <div>
+                      <div className="text-[11px] tracking-[0.12em] uppercase text-[var(--stone)]">Editorial primavera</div>
+                      <div className="font-display text-[18px] leading-none mt-1">Precisión tranquila</div>
+                    </div>
+                    <span className="hidden sm:inline text-[12px] underline underline-offset-4">Ver lookbook</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-span-4 flex flex-col gap-3">
+                <div className="aspect-[3/3.8] overflow-hidden bg-white border border-[var(--line)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&h=800&fit=crop"
+                    alt="Manicura nude detalle"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="bg-[var(--brown)] text-white p-4 lg:p-5">
+                  <div className="text-[11px] tracking-[0.12em] uppercase opacity-60">Esta semana</div>
+                  <div className="mt-2 space-y-1 text-[13px] leading-5">
+                    <div className="flex justify-between">
+                      <span>Mar–Vie</span>
+                      <span className="opacity-80">10–19h</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Sábado</span>
+                      <span className="opacity-80">09–18h</span>
+                    </div>
+                  </div>
+                  <a href="#espacio" className="mt-3 inline-flex text-[11px] tracking-[0.08em] uppercase underline underline-offset-4 opacity-90 hover:opacity-100">
+                    Ver espacio →
+                  </a>
+                </div>
+                <div className="hidden lg:block aspect-square overflow-hidden bg-[var(--sand)] border border-[var(--line)] grid place-items-center p-4 text-center">
+                  <div>
+                    <div className="font-display text-2xl leading-none">8</div>
+                    <div className="text-[11px] tracking-[0.1em] uppercase text-[var(--stone)]">años en Reforma</div>
+                    <div className="mt-2 text-[12px] leading-4 text-[var(--ink-soft)]">A 5 min de Galerías, con patio y café</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right image editorial with offset */}
-        <div className="lg:col-span-7 relative">
-          <div className="grid grid-cols-12 gap-3 lg:gap-4">
-            <div className="col-span-8">
-              <div className="relative aspect-[4/5] overflow-hidden bg-[var(--sand)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1560869713-7d0a29430803?w=900&h=1100&fit=crop"
-                  alt="Mujer con corte bob pulido, editorial"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/40 to-transparent">
-                  <div className="text-white text-[11px] tracking-[0.14em] uppercase">Editorial — Otoño 2025</div>
-                  <div className="text-white font-display text-xl leading-none mt-1">Precisión tranquila</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-span-4 flex flex-col gap-3 lg:gap-4">
-              <div className="aspect-[3/4] overflow-hidden bg-[var(--sand-deep)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&h=800&fit=crop"
-                  alt="Detalle manicura"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="bg-[var(--sand)] p-5 flex-1 flex flex-col justify-center">
-                <div className="text-[11px] tracking-[0.14em] uppercase text-[var(--stone)]">Horario esta semana</div>
-                <div className="mt-3 space-y-1.5 text-[13px] leading-5">
-                  <div className="flex justify-between">
-                    <span>Mar–Vie</span>
-                    <span className="text-[var(--stone)]">10–20h</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Sábado</span>
-                    <span className="text-[var(--stone)]">09:30–19h</span>
-                  </div>
-                </div>
-                <a href="#espacio" className="mt-4 text-[12px] tracking-[0.1em] uppercase underline underline-offset-4">
-                  Ver el espacio
-                </a>
-              </div>
-              <div className="hidden lg:block aspect-square overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1634449571010-02389ed0f357?w=600&h=600&fit=crop"
-                  alt="Interior salón"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Floating quote - desktop only */}
-          <div className="hidden lg:block absolute -left-10 bottom-10 bg-white border border-[var(--line)] p-6 max-w-[280px] shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
-            <div className="text-[13px] leading-6 italic text-[var(--ink-soft)]">
-              “Salí con el mismo corte, pero mejor. Se nota cuando alguien corta pensando en cómo te peinas tú en casa.”
-            </div>
-            <div className="mt-3 text-[11px] tracking-[0.12em] uppercase text-[var(--stone)]">— Elena · clienta desde 2021</div>
-          </div>
+        {/* mobile bottom note - subtle */}
+        <div className="lg:hidden mt-6 border-t border-[var(--line)] pt-4 flex justify-between text-[11px] tracking-[0.08em] uppercase text-[var(--stone)]">
+          <span>Reforma · 8 años</span>
+          <span>777 310 5678</span>
         </div>
       </div>
     </section>

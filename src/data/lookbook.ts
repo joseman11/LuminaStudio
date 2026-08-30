@@ -68,7 +68,7 @@ export const lookbook: LookItem[] = [
     id: "8",
     title: "Espacio Lúmina — luz de tarde",
     category: "Espacio",
-    image: "https://images.unsplash.com/photo-1634449571010-02389ed0f357?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&h=600&fit=crop",
     aspect: "horizontal",
     size: "medium",
   },

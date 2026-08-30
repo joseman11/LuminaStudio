@@ -12,12 +12,12 @@ import StepSummary from "./StepSummary";
 import StepConfirmation from "./StepConfirmation";
 
 const steps = [
-  { id: 1, label: "Servicio" },
-  { id: 2, label: "Especialista" },
-  { id: 3, label: "Fecha" },
-  { id: 4, label: "Hora" },
-  { id: 5, label: "Detalles" },
-  { id: 6, label: "Resumen" },
+  { id: 1, label: "Qué hacer", friendly: "¿Qué te gustaría hacer hoy?" },
+  { id: 2, label: "Con quién", friendly: "¿Con quién te gustaría atenderte?" },
+  { id: 3, label: "Cuándo", friendly: "Elige tu día" },
+  { id: 4, label: "Hora", friendly: "¿A qué hora te viene bien?" },
+  { id: 5, label: "Detalles", friendly: "Cuéntanos un poco más" },
+  { id: 6, label: "Listo", friendly: "Revisamos todo" },
 ];
 
 export default function BookingFlow() {
@@ -30,13 +30,13 @@ export default function BookingFlow() {
     firstVisit: null,
     note: "",
     referenceImage: null,
+    privacyAccepted: false,
   });
   const [confirmed, setConfirmed] = useState<Appointment | null>(null);
 
-  // load draft once
   useEffect(() => {
     const d = loadDraft();
-    if (d) setDraft(d);
+    if (d) setDraft((prev) => ({ ...prev, ...d }));
   }, []);
   useEffect(() => {
     saveDraft(draft);
@@ -46,20 +46,18 @@ export default function BookingFlow() {
 
   const canNext = useMemo(() => {
     if (current === 1) return draft.serviceIds.length > 0;
-    if (current === 2) return draft.specialistId !== undefined; // allow null (= sin preferencia) but must have visited step
+    if (current === 2) return draft.specialistId !== undefined;
     if (current === 3) return !!draft.date;
     if (current === 4) return !!draft.time;
     if (current === 5) return true;
     return true;
   }, [current, draft]);
 
-  // specialist availability: filter by services
   const availableSpecialists = useMemo(() => {
     if (draft.serviceIds.length === 0) return specialists;
     return specialists.filter((s) => s.serviceIds.some((id) => draft.serviceIds.includes(id)));
   }, [draft.serviceIds]);
 
-  // if selected specialist no longer valid for chosen services, reset to "sin preferencia"
   useEffect(() => {
     if (draft.specialistId && !availableSpecialists.some((s) => s.id === draft.specialistId)) {
       setDraft((prev) => ({ ...prev, specialistId: null }));
@@ -68,6 +66,7 @@ export default function BookingFlow() {
 
   function next() {
     if (current < 6) setCurrent((c) => c + 1);
+    document.getElementById("reservar")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function back() {
     if (current > 1) setCurrent((c) => c - 1);
@@ -76,133 +75,196 @@ export default function BookingFlow() {
     setCurrent(step);
   }
 
+  function fillDemo() {
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    // evitar domingo/lunes
+    while (tomorrow.getDay() === 0 || tomorrow.getDay() === 1) tomorrow.setDate(tomorrow.getDate() + 1);
+    const demo: BookingDraft = {
+      serviceIds: ["corte-presicion", "tratamiento-nutricion"],
+      specialistId: null,
+      date: tomorrow.toISOString().slice(0, 10),
+      time: "11:00",
+      firstVisit: true,
+      note: "Simulación — quiero algo natural para el calor de Cuernavaca",
+      referenceImage: null,
+      privacyAccepted: true,
+    };
+    setDraft(demo);
+    setCurrent(6);
+  }
+
   function confirm() {
+    // Simulación: siempre permite confirmar, si falta fecha/hora usa demo
+    const finalDraft = { ...draft };
+    if (!finalDraft.date) {
+      const d = new Date(); d.setDate(d.getDate() + 2);
+      while (d.getDay() === 0 || d.getDay() === 1) d.setDate(d.getDate() + 1);
+      finalDraft.date = d.toISOString().slice(0, 10);
+    }
+    if (!finalDraft.time) finalDraft.time = "11:00";
+    if (finalDraft.serviceIds.length === 0) finalDraft.serviceIds = ["corte-presicion"];
+    const { totalDuration: dur, totalPrice: price } = calcTotals(finalDraft);
     const code = generateCode();
     const appointment: Appointment = {
-      ...draft,
+      ...finalDraft,
       id: `${Date.now()}`,
       code,
       createdAt: new Date().toISOString(),
       status: "upcoming",
-      totalDuration,
-      totalPrice,
+      totalDuration: dur,
+      totalPrice: price,
+      privacyAccepted: true,
     };
     addAppointment(appointment);
     setConfirmed(appointment);
-    // reset draft after a moment? keep for display
     window.dispatchEvent(new Event("lumina:appointments-updated"));
+    localStorage.removeItem("lumina_draft_v2");
   }
 
   if (confirmed) {
-    return <StepConfirmation appointment={confirmed} onNew={() => { setConfirmed(null); setCurrent(1); setDraft({ serviceIds: [], specialistId: null, date: null, time: null, firstVisit: null, note: "", referenceImage: null}); }} />;
+    return <StepConfirmation appointment={confirmed} onNew={() => { setConfirmed(null); setCurrent(1); setDraft({ serviceIds: [], specialistId: null, date: null, time: null, firstVisit: null, note: "", referenceImage: null, privacyAccepted: false}); }} />;
   }
 
+  const friendlyTitle = steps[current - 1]?.friendly ?? "";
+  const progress = (current / 6) * 100;
+
   return (
-    <section id="reservar" className="scroll-mt-16 border-t border-[var(--line)] bg-white">
-      <div className="mx-auto max-w-[1280px] px-6 lg:px-8 py-10 lg:py-14">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-          <div>
-            <div className="text-[11px] tracking-[0.18em] uppercase text-[var(--stone)]">Reserva</div>
-            <h2 className="font-display text-[34px] lg:text-[42px] leading-none mt-2">Agenda tu cita</h2>
-            <p className="mt-3 text-[14px] leading-6 text-[var(--stone)] max-w-[48ch]">
-              Un proceso pensado para hacerlo con calma. Elige a tu ritmo — puedes volver atrás en cualquier momento.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 text-[13px]">
-            {draft.serviceIds.length > 0 && (
-              <div className="hidden sm:flex items-center gap-2 border border-[var(--line)] px-4 h-9">
-                <span className="text-[var(--stone)]">{draft.serviceIds.length} servicio{draft.serviceIds.length>1?"s":""}</span>
-                <span className="w-px h-3 bg-[var(--line)]" />
-                <span>{totalDuration} min</span>
-                <span className="w-px h-3 bg-[var(--line)]" />
-                <span className="font-[500]">desde {totalPrice} €</span>
+    <section suppressHydrationWarning id="reservar" className="scroll-mt-16 bg-[var(--paper)]">
+      <div className="mx-auto max-w-[1280px] px-6 lg:px-8 py-8 lg:py-12">
+        {/* Warm header block - terracotta / sand rhythm */}
+        <div className="bg-white border border-[var(--line)] overflow-hidden">
+          <div className="grid lg:grid-cols-12">
+            <div className="lg:col-span-7 p-6 lg:p-8">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-2 text-[11px] tracking-[0.1em] uppercase font-[700] text-[var(--terracotta)]">
+                  <span className="w-2 h-2 rounded-full bg-[var(--terracotta)]" /> Reserva en segundos
+                </span>
+                <span className="hidden sm:inline-flex px-2 py-1 bg-[var(--mustard)] text-[10px] font-[700] tracking-[0.06em] uppercase text-[var(--brown)]">Simulación</span>
               </div>
-            )}
-            <div className="text-[11px] tracking-[0.14em] uppercase text-[var(--stone)]">
-              Paso {current} de 6
+              <h2 className="font-display text-[32px] lg:text-[40px] leading-[0.9] mt-3">
+                {friendlyTitle}
+              </h2>
+              <button onClick={fillDemo} className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-[600] underline underline-offset-4 text-[var(--terracotta)] hover:text-[var(--brown)]">
+                Probar simulación → llena datos de prueba
+              </button>
+              <p className="mt-3 text-[14px] leading-6 text-[var(--stone)] max-w-[42ch]">
+                {current === 1 && "Elige lo que necesitas, nosotros nos encargamos del resto. Puedes combinar varios."}
+                {current === 2 && "Elige a tu persona favorita o deja que te recomendemos la mejor disponibilidad."}
+                {current === 3 && "Cuéntanos qué día te viene bien. Si no ves tu día, escríbenos por WhatsApp."}
+                {current === 4 && "Te mostramos solo los huecos reales según lo que elegiste."}
+                {current === 5 && "¿Es tu primera vez? ¿Tienes una idea en mente? Todo ayuda."}
+                {current === 6 && "Dale una última revisada. Puedes editar cualquier parte."}
+              </p>
+            </div>
+            <div className="lg:col-span-5 bg-[var(--blush)] p-6 lg:p-8 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-[var(--line)]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] tracking-[0.12em] uppercase font-[700] text-[var(--brown)]">Tu selección</span>
+                <span className="text-[11px] tracking-[0.12em] uppercase text-[var(--stone)]">Paso {current} de 6</span>
+              </div>
+              {draft.serviceIds.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="px-3 py-1.5 bg-white border border-[var(--line)] text-[12px] font-[600]">{draft.serviceIds.length} servicio{draft.serviceIds.length > 1 ? "s" : ""}</span>
+                  <span className="px-3 py-1.5 bg-[var(--brown)] text-white text-[12px] font-[600]">{totalDuration} min</span>
+                  <span className="px-3 py-1.5 bg-white border border-[var(--line)] text-[12px] font-[600]">desde ${totalPrice} MXN</span>
+                </div>
+              ) : (
+                <p className="mt-3 text-[13px] leading-5 text-[var(--brown)]/70">Aún no eliges nada — empieza por lo que más te apetece hoy.</p>
+              )}
+              <div className="mt-4 h-1.5 bg-white/60 overflow-hidden">
+                <div className="h-full bg-[var(--terracotta)] transition-all duration-500" style={{ width: `${progress}%` }} />
+              </div>
+              <p className="mt-2 text-[11px] text-[var(--brown)]/60">Sin llamadas. Sin complicaciones. · Te avisamos por WhatsApp</p>
+            </div>
+          </div>
+
+          {/* Progress stepper - friendly pills, not corporate */}
+          <div className="border-t border-[var(--line)] bg-[var(--sand)] px-4 lg:px-8 py-3">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar" role="tablist" aria-label="Progreso">
+              {steps.map((s) => (
+                <button
+                  key={s.id}
+                  role="tab"
+                  aria-selected={s.id === current}
+                  onClick={() => (s.id < current ? goTo(s.id) : undefined)}
+                  disabled={s.id > current}
+                  className={`shrink-0 flex items-center gap-2 px-3 py-1.5 border text-[12px] font-[600] transition ${
+                    s.id === current
+                      ? "bg-[var(--brown)] text-white border-[var(--brown)]"
+                      : s.id < current
+                        ? "bg-[var(--terracotta)] text-white border-[var(--terracotta)]"
+                        : "bg-white border-[var(--line)] text-[var(--stone)]"
+                  } ${s.id <= current ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
+                >
+                  <span className={`w-5 h-5 grid place-items-center text-[10px] leading-none border ${s.id === current ? "bg-white text-[var(--brown)] border-white" : s.id < current ? "bg-white/20 border-white/30 text-white" : "bg-[var(--sand)] border-[var(--line)] text-[var(--stone)]"}`}>
+                    {s.id < current ? "✓" : s.id}
+                  </span>
+                  <span className="hidden sm:inline">{s.label}</span>
+                  <span className="sm:hidden">{s.label.split(" ")[0]}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="mt-8">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
-            {steps.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => (s.id < current ? goTo(s.id) : undefined)}
-                disabled={s.id > current}
-                className={`flex items-center gap-3 shrink-0 group ${s.id <= current ? "" : "opacity-40"}`}
-              >
-                <span
-                  className={`w-7 h-7 grid place-items-center rounded-full text-[12px] border ${
-                    s.id === current
-                      ? "bg-[var(--ink)] text-white border-[var(--ink)]"
-                      : s.id < current
-                        ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                        : "border-[var(--line)] text-[var(--stone)]"
-                  }`}
-                >
-                  {s.id < current ? "✓" : s.id}
-                </span>
-                <span className={`text-[12px] tracking-[0.1em] uppercase hidden sm:inline ${s.id === current ? "text-[var(--ink)] font-[500]" : "text-[var(--stone)]"}`}>
-                  {s.label}
-                </span>
-                {s.id < steps.length && <span className="w-6 sm:w-10 h-px bg-[var(--line)] ml-1" />}
-              </button>
-            ))}
+        {/* Content card */}
+        <div className="mt-6 bg-white border border-[var(--line)] p-6 lg:p-8">
+          <div className="min-h-[420px]">
+            {current === 1 && <StepServices draft={draft} setDraft={setDraft} />}
+            {current === 2 && <StepSpecialist draft={draft} setDraft={setDraft} available={availableSpecialists} />}
+            {current === 3 && <StepCalendar draft={draft} setDraft={setDraft} />}
+            {current === 4 && <StepTime draft={draft} setDraft={setDraft} totalDuration={totalDuration} />}
+            {current === 5 && <StepPersonalize draft={draft} setDraft={setDraft} />}
+            {current === 6 && <StepSummary draft={draft} onEdit={goTo} totalDuration={totalDuration} totalPrice={totalPrice} />}
           </div>
-          <div className="h-px bg-[var(--line)] mt-2">
-            <div className="h-px bg-[var(--ink)] transition-all duration-500" style={{ width: `${(current / 6) * 100}%` }} />
-          </div>
-        </div>
 
-        {/* Step content */}
-        <div className="mt-8 lg:mt-10 min-h-[420px]">
-          {current === 1 && <StepServices draft={draft} setDraft={setDraft} />}
-          {current === 2 && <StepSpecialist draft={draft} setDraft={setDraft} available={availableSpecialists} />}
-          {current === 3 && <StepCalendar draft={draft} setDraft={setDraft} />}
-          {current === 4 && <StepTime draft={draft} setDraft={setDraft} totalDuration={totalDuration} />}
-          {current === 5 && <StepPersonalize draft={draft} setDraft={setDraft} />}
           {current === 6 && (
-            <StepSummary draft={draft} onEdit={goTo} totalDuration={totalDuration} totalPrice={totalPrice} />
+            <div className="mt-8 bg-[var(--paper)] border border-[var(--line)] p-4 flex gap-3 items-start">
+              <input
+                id="privacy"
+                type="checkbox"
+                checked={!!draft.privacyAccepted}
+                onChange={(e) => setDraft({ ...draft, privacyAccepted: e.target.checked })}
+                className="mt-1 w-4 h-4 accent-[var(--terracotta)]"
+              />
+              <label htmlFor="privacy" className="text-[12px] leading-5 text-[var(--ink-soft)]">
+                He leído el <a href="/privacidad" target="_blank" className="underline underline-offset-4 font-[600]">Aviso de Privacidad</a> y <a href="/terminos" target="_blank" className="underline underline-offset-4 font-[600]">Términos</a>. Autorizo que me contacten por WhatsApp para mi cita. <span className="text-[var(--stone)]">(en simulación se marca automático)</span>
+              </label>
+            </div>
           )}
-        </div>
 
-        {/* Nav */}
-        <div className="mt-8 flex items-center justify-between border-t border-[var(--line)] pt-6">
-          <button
-            onClick={back}
-            disabled={current === 1}
-            className="h-11 px-6 border border-[var(--line)] text-[13px] tracking-[0.1em] uppercase disabled:opacity-30 hover:bg-[var(--sand)] transition"
-          >
-            Atrás
-          </button>
-          <div className="flex items-center gap-3">
+          <div className="mt-8 flex items-center justify-between border-t border-[var(--line)] pt-6">
+            <button
+              onClick={back}
+              disabled={current === 1}
+              className="h-11 px-6 border border-[var(--line)] bg-[var(--sand)] text-[13px] font-[600] disabled:opacity-30 hover:bg-white transition"
+            >
+              ← Atrás
+            </button>
             {current < 6 ? (
               <button
                 onClick={next}
                 disabled={!canNext}
-                className="h-11 px-8 bg-[var(--ink)] text-white text-[13px] tracking-[0.12em] uppercase font-[500] disabled:opacity-30 hover:bg-black transition"
+                className="h-11 px-7 bg-[var(--terracotta)] text-white text-[13px] font-[700] disabled:opacity-40 hover:bg-[var(--terracotta-hover)] transition"
               >
-                Continuar
+                Continuar →
               </button>
             ) : (
               <button
                 onClick={confirm}
-                disabled={!draft.date || !draft.time || draft.serviceIds.length===0}
-                className="h-11 px-8 bg-[var(--accent)] text-white text-[13px] tracking-[0.12em] uppercase font-[500] disabled:opacity-30 hover:bg-[var(--accent-hover)] transition"
+                className="h-11 px-7 bg-[var(--brown)] text-white text-[13px] font-[700] hover:bg-[var(--ink)] transition"
               >
-                Confirmar cita
+                Confirmar cita ✦ {draft.serviceIds.length === 0 ? "(simulación)" : ""}
               </button>
             )}
           </div>
-        </div>
 
-        <p className="mt-4 text-center text-[12px] text-[var(--stone)]">
-          Sin pago anticipado · Cancelación gratuita hasta 24h antes
-        </p>
+          <p className="mt-4 text-center text-[12px] text-[var(--stone)]">
+            Date un rato para ti · Sin pago anticipado &lt; $1,000 MXN ·{" "}
+            <a href="/cancelaciones" className="underline underline-offset-4">
+              Ver políticas
+            </a>
+          </p>
+        </div>
       </div>
     </section>
   );
